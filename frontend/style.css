@@ -121,3 +121,33 @@ button:active {
         width: 100%;
     }
 }
+
+#taskList>div.task-item {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+}
+
+#taskList>div.task-item span {
+    flex: 1;
+}
+
+#taskList>div.task-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #28766b;
+    cursor: pointer;
+}
+
+#taskList>div.task-item input[type="text"] {
+    flex: 1;
+    padding: 0.5rem 0.7rem;
+    font: inherit;
+    border: 1px solid #cbd9d4;
+    border-radius: 6px;
+}
+
+#taskList>div.task-item button {
+    padding: 0.45rem 0.8rem;
+    font-size: 0.85rem;
+}

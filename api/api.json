@@ -1,0 +1,125 @@
+{
+  "info": {
+    "name": "CBE204 Task API",
+    "description": "Week 5 Postman collection for the Task Manager REST API. Covers all CRUD endpoints plus negative test cases.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000/api" },
+    { "key": "createdId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "GET List Tasks",
+      "request": { "method": "GET", "url": "{{baseUrl}}/tasks" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+        "pm.test('Response is an array', function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+      ]}}]
+    },
+    {
+      "name": "GET Task (id=1)",
+      "request": { "method": "GET", "url": "{{baseUrl}}/tasks/1" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+        "pm.test('Task has id, title, completed', function () {",
+        "  const t = pm.response.json();",
+        "  pm.expect(t).to.have.property('id');",
+        "  pm.expect(t).to.have.property('title');",
+        "  pm.expect(t).to.have.property('completed');",
+        "});"
+      ]}}]
+    },
+    {
+      "name": "POST Create Task",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"title\": \"Test API with Postman\"\n}" },
+        "url": "{{baseUrl}}/tasks"
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+        "const body = pm.response.json();",
+        "pm.test('Server generated an id', function () { pm.expect(body).to.have.property('id'); });",
+        "pm.test('completed defaults to false', function () { pm.expect(body.completed).to.eql(false); });",
+        "pm.collectionVariables.set('createdId', body.id);"
+      ]}}]
+    },
+    {
+      "name": "PUT Update Task (id=1)",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"title\": \"Updated task\",\n  \"completed\": true\n}" },
+        "url": "{{baseUrl}}/tasks/1"
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+        "pm.test('Task was updated', function () {",
+        "  const t = pm.response.json();",
+        "  pm.expect(t.title).to.eql('Updated task');",
+        "  pm.expect(t.completed).to.eql(true);",
+        "});"
+      ]}}]
+    },
+    {
+      "name": "DELETE Delete Task (created task)",
+      "request": { "method": "DELETE", "url": "{{baseUrl}}/tasks/{{createdId}}" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 200 or 204', function () {",
+        "  pm.expect([200, 204]).to.include(pm.response.code);",
+        "});"
+      ]}}]
+    },
+    {
+      "name": "Invalid Request — Missing Title",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{}" },
+        "url": "{{baseUrl}}/tasks"
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 400', function () { pm.response.to.have.status(400); });",
+        "pm.test('Response has an error field', function () { pm.expect(pm.response.json()).to.have.property('error'); });"
+      ]}}]
+    },
+    {
+      "name": "Not Found — GET /tasks/9999",
+      "request": { "method": "GET", "url": "{{baseUrl}}/tasks/9999" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 404', function () { pm.response.to.have.status(404); });",
+        "pm.test('Response has an error field', function () { pm.expect(pm.response.json()).to.have.property('error'); });"
+      ]}}]
+    },
+    {
+      "name": "Not Found — PUT /tasks/9999",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"title\": \"Should fail\",\n  \"completed\": false\n}" },
+        "url": "{{baseUrl}}/tasks/9999"
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 404', function () { pm.response.to.have.status(404); });"
+      ]}}]
+    },
+    {
+      "name": "Not Found — DELETE /tasks/9999",
+      "request": { "method": "DELETE", "url": "{{baseUrl}}/tasks/9999" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 404', function () { pm.response.to.have.status(404); });"
+      ]}}]
+    },
+    {
+      "name": "Invalid ID — GET /tasks/abc",
+      "request": { "method": "GET", "url": "{{baseUrl}}/tasks/abc" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 400 or 404', function () {",
+        "  pm.expect([400, 404]).to.include(pm.response.code);",
+        "});"
+      ]}}]
+    }
+  ]
+}
