@@ -1,179 +1,178 @@
-const API_BASE = "http://localhost:3000/api/tasks";
+const API_URL = "http://localhost:3000/api/tasks";
 
-let editingId = null;
+let editingId = null; // id of the task currently being edited
+
+const taskList = document.querySelector("#taskList");
+const errorBox = document.querySelector("#errorMessage");
+const loadingBox = document.querySelector("#loading");
 
 function showError(message) {
-  document.querySelector("#errorMessage").textContent = message;
+  errorBox.textContent = message;
 }
 
-function clearError() {
-  document.querySelector("#errorMessage").textContent = "";
+function setLoading(isLoading) {
+  loadingBox.hidden = !isLoading;
 }
 
+// Wrapper around fetch(): checks response.ok and returns parsed JSON
 async function apiRequest(url, options = {}) {
   const response = await fetch(url, options);
 
   if (!response.ok) {
-    let serverMessage = null;
-    try {
-      const body = await response.json();
-      serverMessage = body.error;
-    } catch (_) {}
-    throw new Error(serverMessage || `API error: ${response.status}`);
+    throw new Error(`API error: ${response.status}`);
   }
-
-  if (response.status === 204) return null;
   return response.json();
 }
 
+function jsonOptions(method, data) {
+  return {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  };
+}
+
+// ---------- Rendering ----------
+
 function renderTasks(tasks) {
-  const list = document.querySelector("#taskList");
-  list.innerHTML = "";
+  taskList.innerHTML = "";
 
   tasks.forEach((task) => {
-    const item =
-      task.id === editingId ? renderEditItem(task) : renderTaskItem(task);
-    list.appendChild(item);
+    const row = task.id === editingId ? editRow(task) : viewRow(task);
+    taskList.appendChild(row);
   });
 }
 
-function renderTaskItem(task) {
-  const item = document.createElement("div");
-  item.className = "task-item";
+function makeButton(text, onClick) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.textContent = text;
+  button.addEventListener("click", onClick);
+  return button;
+}
+
+function viewRow(task) {
+  const row = document.createElement("div");
+  row.className = "task-item";
 
   const checkbox = document.createElement("input");
   checkbox.type = "checkbox";
   checkbox.checked = task.completed;
   checkbox.addEventListener("change", () =>
-    toggleCompleted(task, checkbox.checked)
+    updateTask(task.id, { completed: checkbox.checked })
   );
 
-  const label = document.createElement("span");
-  label.textContent = `${task.id}: ${task.title}`;
-  if (task.completed) label.style.textDecoration = "line-through";
+  const title = document.createElement("span");
+  title.className = task.completed ? "title done" : "title";
+  title.textContent = task.title;
 
-  const editBtn = document.createElement("button");
-  editBtn.type = "button";
-  editBtn.textContent = "Edit";
-  editBtn.addEventListener("click", () => {
-    editingId = task.id;
-    loadTasks();
-  });
-
-  const deleteBtn = document.createElement("button");
-  deleteBtn.type = "button";
-  deleteBtn.textContent = "Delete";
-  deleteBtn.addEventListener("click", () => deleteTask(task.id));
-
-  item.append(checkbox, label, editBtn, deleteBtn);
-  return item;
+  row.append(
+    checkbox,
+    title,
+    makeButton("Edit", () => {
+      editingId = task.id;
+      loadTasks();
+    }),
+    makeButton("Delete", () => deleteTask(task.id))
+  );
+  return row;
 }
 
-function renderEditItem(task) {
-  const item = document.createElement("div");
-  item.className = "task-item";
+function editRow(task) {
+  const row = document.createElement("div");
+  row.className = "task-item";
 
   const input = document.createElement("input");
   input.type = "text";
   input.value = task.title;
 
-  const saveBtn = document.createElement("button");
-  saveBtn.type = "button";
-  saveBtn.textContent = "Save";
-  saveBtn.addEventListener("click", () => saveEdit(task, input.value));
-
-  const cancelBtn = document.createElement("button");
-  cancelBtn.type = "button";
-  cancelBtn.textContent = "Cancel";
-  cancelBtn.addEventListener("click", () => {
-    editingId = null;
-    loadTasks();
-  });
-
-  item.append(input, saveBtn, cancelBtn);
-  return item;
+  row.append(
+    input,
+    makeButton("Save", () => saveEdit(task.id, input.value)),
+    makeButton("Cancel", () => {
+      editingId = null;
+      loadTasks();
+    })
+  );
+  return row;
 }
 
+// ---------- CRUD operations ----------
+
 async function loadTasks() {
+  setLoading(true);
   try {
-    const tasks = await apiRequest(API_BASE);
-    clearError();
+    const tasks = await apiRequest(API_URL);
+    showError("");
     renderTasks(tasks);
   } catch (error) {
     console.error(error);
-    showError("Unable to load tasks. Please try again");
+    showError("Unable to load tasks. Please try again.");
+  } finally {
+    setLoading(false);
   }
 }
 
-document.querySelector("#taskForm").addEventListener("submit", async (event) => {
-  event.preventDefault();
-
-  const titleInput = document.querySelector("#taskTitle");
-  const title = titleInput.value.trim();
-  if (!title) return;
-
+async function createTask(title) {
   try {
-    await apiRequest(API_BASE, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title }),
-    });
-    titleInput.value = "";
-    clearError();
-    loadTasks();
+    await apiRequest(API_URL, jsonOptions("POST", { title }));
+    showError("");
+    await loadTasks();
+    return true;
   } catch (error) {
     console.error(error);
-    showError("Unable to create task. Please try again");
-  }
-});
-
-async function toggleCompleted(task, completed) {
-  try {
-    await apiRequest(`${API_BASE}/${task.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: task.title, completed }),
-    });
-    clearError();
-    loadTasks();
-  } catch (error) {
-    console.error(error);
-    showError("Unable to update task. Please try again");
-    loadTasks();
+    showError("Unable to add the task. Please try again.");
+    return false;
   }
 }
 
-async function saveEdit(task, newTitle) {
+async function updateTask(id, changes) {
+  try {
+    await apiRequest(`${API_URL}/${id}`, jsonOptions("PUT", changes));
+    editingId = null;
+    showError("");
+  } catch (error) {
+    console.error(error);
+    showError("Unable to update the task. Please try again.");
+  }
+  loadTasks(); // refresh either way so the list matches the server
+}
+
+async function saveEdit(id, newTitle) {
   const title = newTitle.trim();
-  if (!title) {
-    showError("Task title cannot be empty");
+  if (title === "") {
+    showError("Task title cannot be empty.");
     return;
   }
-
-  try {
-    await apiRequest(`${API_BASE}/${task.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, completed: task.completed }),
-    });
-    editingId = null;
-    clearError();
-    loadTasks();
-  } catch (error) {
-    console.error(error);
-    showError("Unable to update task. Please try again");
-  }
+  updateTask(id, { title });
 }
 
 async function deleteTask(id) {
   try {
-    await apiRequest(`${API_BASE}/${id}`, { method: "DELETE" });
-    clearError();
-    loadTasks();
+    await apiRequest(`${API_URL}/${id}`, { method: "DELETE" });
+    showError("");
   } catch (error) {
     console.error(error);
-    showError("Unable to delete task. Please try again");
+    showError("Unable to delete the task. Please try again.");
   }
+  loadTasks();
 }
+
+// ---------- Events ----------
+
+document.querySelector("#taskForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const input = document.querySelector("#taskTitle");
+  const title = input.value.trim();
+  if (title === "") {
+    showError("Please enter a task title.");
+    return;
+  }
+
+  if (await createTask(title)) {
+    input.value = "";
+  }
+});
 
 loadTasks();

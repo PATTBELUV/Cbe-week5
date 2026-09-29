@@ -1,153 +1,71 @@
-:root {
-    font-family: "Trebuchet MS", "Segoe UI", sans-serif;
-    color: #24313b;
-    background: #e9f0ee;
-}
-
-* {
-    box-sizing: border-box;
-}
-
 body {
-    min-height: 100vh;
-    margin: 0;
-    padding: 4rem 1.25rem;
-    background:
-        linear-gradient(135deg, rgba(255, 255, 255, 0.7), transparent 45%),
-        repeating-linear-gradient(0deg, transparent 0 31px, rgba(50, 87, 80, 0.05) 32px),
-        #e9f0ee;
+  font-family: system-ui, sans-serif;
+  background: #f4f6f8;
+  color: #222;
+  margin: 0;
+  padding: 2rem 1rem;
 }
 
-body::before {
-    display: block;
-    max-width: 560px;
-    margin: 0 auto 1.25rem;
-    color: #28766b;
-    content: "YOUR SMALL WINS";
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
+main {
+  max-width: 520px;
+  margin: 0 auto;
 }
 
-#taskForm,
-#taskList,
-#errorMessage {
-    width: min(100%, 560px);
-    margin-right: auto;
-    margin-left: auto;
+h1 {
+  margin-top: 0;
 }
 
 #taskForm {
-    display: flex;
-    gap: 0.7rem;
-    padding: 1.5rem;
-    background: #fffdf8;
-    border: 1px solid rgba(36, 49, 59, 0.1);
-    border-radius: 12px;
-    box-shadow: 0 18px 40px rgba(45, 70, 65, 0.12);
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 #taskTitle {
-    min-width: 0;
-    flex: 1;
-    padding: 0.82rem 0.95rem;
-    color: #24313b;
-    font: inherit;
-    background: #f2f6f3;
-    border: 1px solid #cbd9d4;
-    border-radius: 7px;
-    outline: none;
-}
-
-#taskTitle:focus {
-    border-color: #28766b;
-    box-shadow: 0 0 0 3px rgba(40, 118, 107, 0.15);
+  flex: 1;
+  padding: 0.5rem;
+  font-size: 1rem;
 }
 
 button {
-    padding: 0.82rem 1.05rem;
-    color: #fffdf8;
-    font: inherit;
-    font-weight: 700;
-    background: #28766b;
-    border: 0;
-    border-radius: 7px;
-    cursor: pointer;
-    transition: background 160ms ease, transform 160ms ease;
-}
-
-button:hover {
-    background: #1e5d54;
-    transform: translateY(-1px);
-}
-
-button:active {
-    transform: translateY(0);
-}
-
-#taskList {
-    display: grid;
-    gap: 0.7rem;
-    margin-top: 1.4rem;
-}
-
-#taskList>div {
-    padding: 1rem 1.1rem;
-    color: #30434a;
-    font-size: 1rem;
-    background: rgba(255, 253, 248, 0.86);
-    border-left: 4px solid #e29b4b;
-    border-radius: 5px;
-    box-shadow: 0 5px 14px rgba(45, 70, 65, 0.08);
+  padding: 0.5rem 0.8rem;
+  font-size: 0.9rem;
+  cursor: pointer;
 }
 
 #errorMessage {
-    margin-top: 1rem;
-    color: #a64035;
-    font-size: 0.9rem;
+  color: #b3261e;
+  min-height: 1.2rem;
+  margin-bottom: 0.5rem;
 }
 
-@media (max-width: 480px) {
-    body {
-        padding: 2.5rem 1rem;
-    }
-
-    #taskForm {
-        flex-direction: column;
-        padding: 1.1rem;
-    }
-
-    button {
-        width: 100%;
-    }
+#loading {
+  color: #666;
+  margin-bottom: 0.5rem;
 }
 
-#taskList>div.task-item {
-    display: flex;
-    align-items: center;
-    gap: 0.7rem;
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0.6rem;
+  margin-bottom: 0.5rem;
 }
 
-#taskList>div.task-item span {
-    flex: 1;
+.task-item .title {
+  flex: 1;
 }
 
-#taskList>div.task-item input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    accent-color: #28766b;
-    cursor: pointer;
+.task-item .title.done {
+  text-decoration: line-through;
+  color: #888;
 }
 
-#taskList>div.task-item input[type="text"] {
-    flex: 1;
-    padding: 0.5rem 0.7rem;
-    font: inherit;
-    border: 1px solid #cbd9d4;
-    border-radius: 6px;
-}
-
-#taskList>div.task-item button {
-    padding: 0.45rem 0.8rem;
-    font-size: 0.85rem;
+.task-item input[type="text"] {
+  flex: 1;
+  padding: 0.3rem;
+  font-size: 1rem;
 }

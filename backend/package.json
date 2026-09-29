@@ -1,16 +1,13 @@
 {
-  "name": "cbe204-week5-starter",
+  "name": "cbe204-week5-task-api",
   "version": "1.0.0",
-  "description": "",
+  "description": "Task Manager REST API (Express, in-memory)",
   "main": "server.js",
-  "scripts": {
-    "start": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "ISC",
   "dependencies": {
     "cors": "^2.8.6",
     "express": "^5.2.1"

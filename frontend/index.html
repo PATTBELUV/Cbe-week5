@@ -3,18 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>To-Do List</title>
+    <title>Task Manager</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <form id="taskForm">
-      <input id="taskTitle" placeholder="Task title" />
+    <main>
+      <h1>Task Manager</h1>
 
-      <button type="submit">Add Task</button>
-    </form>
+      <form id="taskForm">
+        <input id="taskTitle" placeholder="Task title" autocomplete="off" />
+        <button type="submit">Add Task</button>
+      </form>
 
-    <div id="taskList"></div>
-    <div id="errorMessage"></div>
+      <div id="errorMessage"></div>
+      <div id="loading" hidden>Loading...</div>
+      <div id="taskList"></div>
+    </main>
 
     <script src="app.js"></script>
   </body>
